@@ -2,6 +2,22 @@
 
 A small C# command-line banking simulator with in-memory chequing and savings accounts. Both accounts start at $0.00 each time you run the program.
 
+## Development
+
+By default, this project is set up to run against a locally run LLM running in Ollama.  You can use Open Ai by updating the app settings or otherwise overriding the values (env vars or user secrets).
+
+You'll also need to set `OpenAI:ApiKey` user secret or `OpenAI__ApiKey` environment variable to your OpenAI API key.  When running locally with ollama, the key is required, although it can be set to any value.
+
+For prod, we should change the default and select a model.
+```
+{
+  "OpenAI": {
+    "Model": "some_model",
+    "Endpoint": "https://api.openai.com/v1"
+  }
+}
+```
+
 ## Run
 
 With the .NET 10 SDK installed, run this from the repo root.

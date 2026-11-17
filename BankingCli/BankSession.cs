@@ -1,3 +1,5 @@
+using Microsoft.Extensions.Configuration;
+
 using System.Globalization;
 
 namespace BankingCli;
@@ -9,6 +11,7 @@ internal sealed class BankSession
 
     // Leave room for the sum of two valid amounts without losing cent precision.
     private const decimal MaximumBalance = 99_999_999_999_999_999_999_999_999.99m;
+    private readonly AppConfig _config;
 
     private const string Help = """
         ACCOUNTS chequing | savings
@@ -19,6 +22,11 @@ internal sealed class BankSession
         help | ?
         exit
         """;
+    
+    public BankSession()
+    {
+        _config = new AppConfig();
+    }
 
     private readonly Dictionary<string, decimal> balances = new Dictionary<string, decimal>()
     {
@@ -42,6 +50,7 @@ internal sealed class BankSession
 
         string output = command switch
         {
+            "test" => $"OpenAIApiKey: {_config.OpenAIApiKey}, OpenAIModel: {_config.OpenAIModel}, OpenAIEndpoint: {_config.OpenAIEndpoint}",
             "balance" => ShowBalance(tokens),
             "deposit" or "withdraw" or "transfer" => Transact(command, tokens),
             "help" or "?" when tokens.Length == 1 => Help,
