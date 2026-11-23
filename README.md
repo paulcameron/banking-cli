@@ -4,7 +4,7 @@ A small C# command-line banking simulator with in-memory chequing and savings ac
 
 ## Development
 
-By default, this project is set up to run against a locally run LLM running in Ollama (`ollama run qwen3:8b`).  You can use Open Ai by updating the app settings or otherwise overriding the values (env vars or user secrets).
+By default, this project is set up to run against a locally run LLM running in Ollama (`ollama run ornith:9b`).  You can use Open Ai by updating the app settings or otherwise overriding the values (env vars or user secrets).
 
 You'll also need to set `OpenAI:ApiKey` user secret or `OpenAI__ApiKey` environment variable to your OpenAI API key.  When running locally with ollama, the key is required, although it can be set to any value.
 

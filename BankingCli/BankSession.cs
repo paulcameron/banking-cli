@@ -106,16 +106,6 @@ public class BankSession
         return FormatBalance(account);
     }
 
-    public string Help() => """
-        **Available Commands:**
-        1. `get balance` - Check your account balance (e.g., "get balance chequing")
-        2. `deposit` - Add funds to an account (e.g., "deposit 100 to savings")
-        3. `withdraw` - Remove funds from an account (e.g., "withdraw 50 from chequing")
-        4. `transfer` - Move money between accounts (e.g., "transfer 200 from savings to chequing")
-
-        Let me know what you'd like to do!
-        """;
-
     private static bool TryParseAmount(string input, out decimal amount)
     {
         amount = 0m;
@@ -131,7 +121,7 @@ public class BankSession
             && amount <= MaximumBalance;
     }
 
-    private string FormatBalance(string account) => $"{account}={BankingUtils.FormatMoney(balances[account])}";
+    private string FormatBalance(string account) => $"The balance in {account} is {BankingUtils.FormatMoney(balances[account])}";
 }
 
 public readonly record struct CommandResult(string Output, bool ShouldExit = false);

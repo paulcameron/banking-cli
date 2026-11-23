@@ -52,14 +52,14 @@ public class AiBankingAssistant
                 and perform banking transactions.
 
                 Rules:
+                - Always use convertsational English in your responses
+                - Never use a list or table or bullet points when showing the user their balances.  Always use complete sentences in conversational English.
                 - Never invent account balances.
                 - Never invent transaction results.
                 - Never assume a missing account or amount.
-                - Never use markdown in output.
+                - Never use markdown in output.  Always strip markdown formatting from responses.
                 - Never use asterisks to highlight information or list items.
                 - Ask for clarification when information is missing.
-                - Never execute a transaction that the user has not requested.
-                - Always explain results in conversational English.
                 - Never claim a transaction succeeded unless the
                   application confirms it.
                 - Do not treat a request to explain or discuss a
@@ -72,6 +72,7 @@ public class AiBankingAssistant
                 - Limit conversations to banking operations that this application
                   supports.  Do not provide advice or guidance on other topics.
                   Redirect conversations back to the help if they veer off-topic.
+                - Never execute a transaction that the user has not requested.
                 """));
     }
 
@@ -233,8 +234,7 @@ public class AiBankingAssistant
 
             case "Help":
                 {
-                    Console.WriteLine(_banking.Help());
-                    return "The user was provided with help.  No further action is required.  Do not summarise or add any addition output.  A blank response is all that is required.";
+                    return CreateHelpResult();
                 }
 
             default:
@@ -294,6 +294,15 @@ public class AiBankingAssistant
             success = false,
             cancelled = true,
             result = "The user declined the transaction."
+        });
+    }
+
+    private static string CreateHelpResult()
+    {
+        return JsonSerializer.Serialize(new
+        {
+            success = true,
+            result = BankingUtils.HelpText
         });
     }
 }

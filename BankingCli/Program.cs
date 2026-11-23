@@ -37,7 +37,7 @@ while (true)
 
     if (input.Equals("help", StringComparison.OrdinalIgnoreCase))
     {
-        Console.WriteLine(banking.Help());
+        Console.WriteLine(BankingUtils.HelpText);
         continue;
     }
 
