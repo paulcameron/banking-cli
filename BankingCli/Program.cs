@@ -23,8 +23,14 @@ while (true)
     }
 
     string? input = Console.ReadLine();
+
+    // if we get an EOF or the stream ends or is closed, exit the loop
     if (input is null)
         break;
+
+    // short circuit for empty input, exit, and help commands
+    if (input.Equals("", StringComparison.OrdinalIgnoreCase))
+        continue;
 
     if (input.Equals("exit", StringComparison.OrdinalIgnoreCase))
         break;
@@ -35,6 +41,7 @@ while (true)
         continue;
     }
 
+    // Process the input using the AI assistant
     try
     {
         string output = await assistant.ProcessAsync(input);

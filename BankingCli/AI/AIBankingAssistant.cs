@@ -243,6 +243,7 @@ public class AiBankingAssistant
         }
     }
 
+    // get the value of a string property from a JSON object
     private static string GetString(
         JsonElement root,
         string property)
@@ -259,6 +260,7 @@ public class AiBankingAssistant
                 $"Missing parameter: {property}");
     }
 
+    // Ask the user to confirm a transaction before executing it
     private static bool ConfirmTransaction(string description)
     {
         Console.WriteLine();
