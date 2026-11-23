@@ -32,7 +32,7 @@ public class BankSession
 
         if (parsedAmount > balances[account])
         {
-            return $"ERROR INSUFFICIENT_FUNDS | {FormatBalance(account)}";
+            return $"ERROR INSUFFICIENT_FUNDS | {account}: {FormatBalance(account)}";
         }
 
         balances[account] -= parsedAmount;
@@ -121,7 +121,8 @@ public class BankSession
             && amount <= MaximumBalance;
     }
 
-    private string FormatBalance(string account) => $"The balance in {account} is {BankingUtils.FormatMoney(balances[account])}";
+    //private string FormatBalance(string account) => $"The balance in {account} is {BankingUtils.FormatMoney(balances[account])}";
+    private string FormatBalance(string account) => $"{BankingUtils.FormatMoney(balances[account])}";
 }
 
 public readonly record struct CommandResult(string Output, bool ShouldExit = false);

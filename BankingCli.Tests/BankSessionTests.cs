@@ -8,14 +8,14 @@ public sealed class BankSessionTests
     {
         BankSession session = new();
 
-        Assert.AreEqual("chequing=$0.00", session.GetBalance("chequing"));
+        Assert.AreEqual("$0.00", session.GetBalance("chequing"));
     }
 
     [TestMethod]
     public void GetBalanceReturnsBothAccountsForAllOrEmptyAccount()
     {
         BankSession session = new();
-        const string expected = "The balance in your chequing account is chequing=$0.00 and the balance in your savings account is savings=$0.00";
+        const string expected = "The balance in your chequing account is $0.00 and the balance in your savings account is $0.00";
 
         Assert.AreEqual(expected, session.GetBalance("all"));
         Assert.AreEqual(expected, session.GetBalance(""));
@@ -35,11 +35,11 @@ public sealed class BankSessionTests
         BankSession session = new();
 
         Assert.AreEqual(
-            "I deposited $25.50 in savings. The balance of savings is now savings=$25.50",
+            "I deposited $25.50 in savings. The balance of savings is now $25.50",
             session.Deposit("savings", "25.5"));
 
         Assert.AreEqual(
-            "I deposited $100.05 in savings. The balance of savings is now savings=$125.55",
+            "I deposited $100.05 in savings. The balance of savings is now $125.55",
             session.Deposit("savings", "100.05"));
     }
 
@@ -82,11 +82,11 @@ public sealed class BankSessionTests
         session.Deposit("chequing", "100");
 
         Assert.AreEqual(
-            "I withdrew $25.25 from chequing. The balance of chequing is now chequing=$74.75",
+            "I withdrew $25.25 from chequing. The balance of chequing is now $74.75",
             session.Withdraw("chequing", "25.25"));
 
         Assert.AreEqual(
-            "I withdrew $10.55 from chequing. The balance of chequing is now chequing=$64.20",
+            "I withdrew $10.55 from chequing. The balance of chequing is now $64.20",
             session.Withdraw("chequing", "10.55"));
     }
 
@@ -98,9 +98,9 @@ public sealed class BankSessionTests
         session.Deposit("chequing", "100");
 
         Assert.AreEqual(
-            "ERROR INSUFFICIENT_FUNDS | chequing=$100.00",
+            "ERROR INSUFFICIENT_FUNDS | chequing: $100.00",
             session.Withdraw("chequing", "125"));
-        Assert.AreEqual("chequing=$100.00", session.GetBalance("chequing"));
+        Assert.AreEqual("$100.00", session.GetBalance("chequing"));
     }
 
     [TestMethod]
@@ -118,7 +118,7 @@ public sealed class BankSessionTests
         session.Deposit("chequing", "100");
 
         Assert.AreEqual(
-            "I transferred $25.25 from chequing to savings. The balance of chequing is now chequing=$74.75 and the balance of savings is now savings=$25.25",
+            "I transferred $25.25 from chequing to savings. The balance of chequing is now $74.75 and the balance of savings is now $25.25",
             session.Transfer("chequing", "savings", "25.25"));
     }
 
@@ -129,7 +129,7 @@ public sealed class BankSessionTests
         session.Deposit("chequing", "100");
 
         Assert.AreEqual("ERROR SAME_ACCOUNT", session.Transfer("chequing", "chequing", "10"));
-        Assert.AreEqual("chequing=$100.00", session.GetBalance("chequing"));
+        Assert.AreEqual("$100.00", session.GetBalance("chequing"));
     }
 
     [TestMethod]
@@ -149,9 +149,9 @@ public sealed class BankSessionTests
         session.Deposit("savings", "100");
 
         Assert.AreEqual(
-            "ERROR INSUFFICIENT_FUNDS | chequing=$100.00",
+            "ERROR INSUFFICIENT_FUNDS | $100.00",
             session.Transfer("chequing", "savings", "1000"));
-        Assert.AreEqual("chequing=$100.00", session.GetBalance("chequing"));
-        Assert.AreEqual("savings=$100.00", session.GetBalance("savings"));
+        Assert.AreEqual("$100.00", session.GetBalance("chequing"));
+        Assert.AreEqual("$100.00", session.GetBalance("savings"));
     }
 }
