@@ -4,7 +4,7 @@ A small C# command-line banking simulator with in-memory chequing and savings ac
 
 ## Development
 
-By default, this project is set up to run against a locally run LLM running in Ollama.  You can use Open Ai by updating the app settings or otherwise overriding the values (env vars or user secrets).
+By default, this project is set up to run against a locally run LLM running in Ollama (`ollama run qwen3:8b`).  You can use Open Ai by updating the app settings or otherwise overriding the values (env vars or user secrets).
 
 You'll also need to set `OpenAI:ApiKey` user secret or `OpenAI__ApiKey` environment variable to your OpenAI API key.  When running locally with ollama, the key is required, although it can be set to any value.
 
@@ -41,15 +41,21 @@ In Visual Studio 2026 (18.0 or later), open `BankingCli.sln` and press F5. Visua
 
 Accounts are `chequing` and `savings`. Amounts are positive, with up to two decimal places, such as `5` or `5.25`. Withdrawals and transfers require sufficient funds, and transfers require two different accounts. A failed command leaves both balances as they were.
 
-```text
-bank> deposit savings 10
-DEPOSIT $10.00 TO savings | savings=$10.00
-bank> transfer savings chequing 4
-TRANSFER $4.00 FROM savings TO chequing | savings=$6.00 | chequing=$4.00
-bank> withdraw chequing 1
-WITHDRAW $1.00 FROM chequing | chequing=$3.00
-bank> balance
-chequing=$3.00 | savings=$6.00
-bank> exit
-EXIT
+## Sample Sessions
+
+```
+Banking AI Assistant ready!
+Type 'exit' to quit.
+bank> put a grand in my savings
+
+Confirmation:
+You are asking to Deposit $1000.00 into savings.
+Do you want to proceed? (y/n): y
+I successfully deposited $1000.00 into your savings account. Your savings balance is now $1000.00. Would you like to perform another transaction or check another account?
+bank> move half of my savings into chequing
+
+Confirmation:
+You wish to transfer $500.00 from savings to chequing.
+Do you want to proceed? (y/n): y
+I successfully transferred $500.00 from your savings account to chequing. Both accounts now have a balance of $500.00. Would you like to perform another transaction or check another account?
 ```

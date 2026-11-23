@@ -4,29 +4,13 @@ using System.Globalization;
 
 namespace BankingCli;
 
-internal sealed class BankSession
+public class BankSession
 {
     private const string Chequing = "chequing";
     private const string Savings = "savings";
 
     // Leave room for the sum of two valid amounts without losing cent precision.
     private const decimal MaximumBalance = 99_999_999_999_999_999_999_999_999.99m;
-    private readonly AppConfig _config;
-
-    private const string Help = """
-        ACCOUNTS chequing | savings
-        deposit <account> <amount>
-        withdraw <account> <amount>
-        transfer <from> <to> <amount>
-        balance [account]
-        help | ?
-        exit
-        """;
-    
-    public BankSession()
-    {
-        _config = new AppConfig();
-    }
 
     private readonly Dictionary<string, decimal> balances = new Dictionary<string, decimal>()
     {
@@ -34,104 +18,103 @@ internal sealed class BankSession
         [Savings] = 0m
     };
 
-    public CommandResult Execute(string input)
+    public string Withdraw(string account, string amount)
     {
-        string[] tokens = input.Split((char[]?)null, StringSplitOptions.RemoveEmptyEntries);
-        if (tokens.Length == 0)
-        {
-            return new CommandResult(string.Empty);
-        }
-
-        string command = tokens[0].ToLowerInvariant();
-        if (command == "exit" && tokens.Length == 1)
-        {
-            return new CommandResult("EXIT", ShouldExit: true);
-        }
-
-        string output = command switch
-        {
-            "test" => $"OpenAIApiKey: {_config.OpenAIApiKey}, OpenAIModel: {_config.OpenAIModel}, OpenAIEndpoint: {_config.OpenAIEndpoint}",
-            "balance" => ShowBalance(tokens),
-            "deposit" or "withdraw" or "transfer" => Transact(command, tokens),
-            "help" or "?" when tokens.Length == 1 => Help,
-            "help" or "?" or "exit" => "ERROR INVALID_ARGUMENTS",
-            _ => "ERROR UNKNOWN_COMMAND"
-        };
-
-        return new CommandResult(output);
-    }
-
-    private string ShowBalance(string[] tokens)
-    {
-        if (tokens.Length == 1)
-        {
-            return $"{FormatBalance(Chequing)} | {FormatBalance(Savings)}";
-        }
-
-        if (tokens.Length != 2)
-        {
-            return "ERROR INVALID_ARGUMENTS";
-        }
-
-        string account = tokens[1].ToLowerInvariant();
-        return balances.ContainsKey(account) ? FormatBalance(account) : "ERROR INVALID_ACCOUNT";
-    }
-
-    private string Transact(string command, string[] tokens)
-    {
-        bool isTransfer = command == "transfer";
-        if (tokens.Length != (isTransfer ? 4 : 3))
-        {
-            return "ERROR INVALID_ARGUMENTS";
-        }
-
-        string account = tokens[1].ToLowerInvariant();
-        string destination = isTransfer ? tokens[2].ToLowerInvariant() : account;
-        if (!balances.ContainsKey(account) || !balances.ContainsKey(destination))
+        if (!balances.ContainsKey(account))
         {
             return "ERROR INVALID_ACCOUNT";
         }
 
-        if (!TryParseAmount(tokens[^1], out decimal amount))
+        if (!TryParseAmount(amount, out decimal parsedAmount))
         {
             return "ERROR INVALID_AMOUNT";
         }
 
-        if (isTransfer && account == destination)
-        {
-            return "ERROR SAME_ACCOUNT";
-        }
-
-        if (command != "deposit" && amount > balances[account])
+        if (parsedAmount > balances[account])
         {
             return $"ERROR INSUFFICIENT_FUNDS | {FormatBalance(account)}";
         }
 
-        if (command != "withdraw" && balances[destination] + amount > MaximumBalance)
+        balances[account] -= parsedAmount;
+        
+        string formattedAmount = BankingUtils.FormatMoney(parsedAmount);
+        return $"I withdrew {formattedAmount} from {account}. The balance of {account} is now {FormatBalance(account)}";
+    }
+
+    public string Deposit(string account, string amount)
+    {
+        if (!balances.ContainsKey(account))
+        {
+            return "ERROR INVALID_ACCOUNT";
+        }
+
+        if (!TryParseAmount(amount, out decimal parsedAmount))
+        {
+            return "ERROR INVALID_AMOUNT";
+        }
+
+        if (balances[account] + parsedAmount > MaximumBalance)
         {
             return "ERROR BALANCE_LIMIT";
         }
 
-        // A rejected transfer must leave both accounts intact, so validate both sides before updating either.
-        if (command != "deposit")
-        {
-            balances[account] -= amount;
-        }
+        balances[account] += parsedAmount;
 
-        if (command != "withdraw")
-        {
-            balances[destination] += amount;
-        }
-
-        string formattedAmount = FormatMoney(amount);
-        return command switch
-        {
-            "deposit" => $"DEPOSIT {formattedAmount} TO {account} | {FormatBalance(account)}",
-            "withdraw" => $"WITHDRAW {formattedAmount} FROM {account} | {FormatBalance(account)}",
-            _ => $"TRANSFER {formattedAmount} FROM {account} TO {destination} | " +
-                 $"{FormatBalance(account)} | {FormatBalance(destination)}"
-        };
+        string formattedAmount = BankingUtils.FormatMoney(parsedAmount);
+        return $"I deposited {formattedAmount} in {account}. The balance of {account} is now {FormatBalance(account)}";
     }
+
+    public string Transfer(string fromAccount, string toAccount, string amount)
+    {
+        if (!balances.ContainsKey(fromAccount) || !balances.ContainsKey(toAccount))
+        {
+            return "ERROR INVALID_ACCOUNT";
+        }
+        if (!TryParseAmount(amount, out decimal parsedAmount))
+        {
+            return "ERROR INVALID_AMOUNT";
+        }
+        if (fromAccount == toAccount)
+        {
+            return "ERROR SAME_ACCOUNT";
+        }
+        if (parsedAmount > balances[fromAccount])
+        {
+            return $"ERROR INSUFFICIENT_FUNDS | {FormatBalance(fromAccount)}";
+        }
+        if (balances[toAccount] + parsedAmount > MaximumBalance)
+        {
+            return "ERROR BALANCE_LIMIT";
+        }
+        balances[fromAccount] -= parsedAmount;
+        balances[toAccount] += parsedAmount;
+        string formattedAmount = BankingUtils.FormatMoney(parsedAmount);
+        return $"I transferred {formattedAmount} from {fromAccount} to {toAccount}. The balance of {fromAccount} is now {FormatBalance(fromAccount)} and the balance of {toAccount} is now {FormatBalance(toAccount)}";
+    }
+
+    public string GetBalance(string account)
+    {
+        if (account == "all" || account == "")
+        {
+            return $"The balance in your chequing account is {FormatBalance(Chequing)} and the balance in your savings account is {FormatBalance(Savings)}";
+        }
+
+        if (!balances.ContainsKey(account))
+        {
+            return "ERROR INVALID_ACCOUNT";
+        }
+        return FormatBalance(account);
+    }
+
+    public string Help() => """
+        **Available Commands:**
+        1. `get balance` - Check your account balance (e.g., "get balance chequing")
+        2. `deposit` - Add funds to an account (e.g., "deposit 100 to savings")
+        3. `withdraw` - Remove funds from an account (e.g., "withdraw 50 from chequing")
+        4. `transfer` - Move money between accounts (e.g., "transfer 200 from savings to chequing")
+
+        Let me know what you'd like to do!
+        """;
 
     private static bool TryParseAmount(string input, out decimal amount)
     {
@@ -148,9 +131,7 @@ internal sealed class BankSession
             && amount <= MaximumBalance;
     }
 
-    private string FormatBalance(string account) => $"{account}={FormatMoney(balances[account])}";
-
-    private static string FormatMoney(decimal amount) => "$" + amount.ToString("F2", CultureInfo.InvariantCulture);
+    private string FormatBalance(string account) => $"{account}={BankingUtils.FormatMoney(balances[account])}";
 }
 
-internal readonly record struct CommandResult(string Output, bool ShouldExit = false);
+public readonly record struct CommandResult(string Output, bool ShouldExit = false);

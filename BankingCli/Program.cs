@@ -1,6 +1,18 @@
 using BankingCli;
+using BankingCli.AI;
+
+AppConfig config = new AppConfig();
 
 BankSession banking = new BankSession();
+
+AiBankingAssistant assistant = new AiBankingAssistant(
+    config.OpenAIApiKey,
+    config.OpenAIModel,
+    config.OpenAIEndpoint,
+    banking);
+
+Console.WriteLine("Banking AI Assistant ready!");
+Console.WriteLine("Type 'exit' to quit.");
 
 while (true)
 {
@@ -12,18 +24,29 @@ while (true)
 
     string? input = Console.ReadLine();
     if (input is null)
-    {
         break;
+
+    if (input.Equals("exit", StringComparison.OrdinalIgnoreCase))
+        break;
+
+    if (input.Equals("help", StringComparison.OrdinalIgnoreCase))
+    {
+        Console.WriteLine(banking.Help());
+        continue;
     }
 
-    CommandResult result = banking.Execute(input);
-    if (result.Output.Length > 0)
+    try
     {
-        Console.WriteLine(result.Output);
-    }
+        string output = await assistant.ProcessAsync(input);
 
-    if (result.ShouldExit)
+        if (!string.IsNullOrWhiteSpace(output))
+        {
+            Console.WriteLine(output);
+        }
+    }
+    catch (Exception ex)
     {
-        break;
+        Console.WriteLine(
+            $"ERROR: Unable to process request: {ex.Message}");
     }
 }

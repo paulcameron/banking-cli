@@ -11,7 +11,7 @@ public class AppConfig
             .AddJsonFile("appsettings.json", optional: false);
 
         Configuration = builder
-            .AddUserSecrets<AppConfig>(optional: true)
+            .AddUserSecrets<Program>(optional: true)
             .AddEnvironmentVariables()
             .Build();
     }
